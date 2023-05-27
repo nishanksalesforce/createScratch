@@ -1,0 +1,18 @@
+image: node:16
+
+pipelines:
+  custom:
+    create-scratch-org:
+      - variables:
+         - name: DURATIONDAYS
+      - step:
+          name: Install sfdx, Auth DevHub, and Create Scratch Org
+          script: 
+            - npm install sfdx-cli --global
+            - npm install @salesforce/cli --global
+            - sfdx auth:jwt:grant --clientid $clientid --jwtkeyfile server.key --username $devhubUsername --setdefaultdevhubusername --setalias devhubAlias
+            - sfdx force:org:create -f config/project-scratch-def.json --durationdays $DURATIONDAYS -a myScratchOrg
+            - sfdx force:user:password:generate -u myScratchOrg
+            - sfdx force:user:display -u myScratchOrg
+            - sfdx force:source:convert -d mdapi
+            - sfdx force:mdapi:deploy -d mdapi -u myScratchOrg
